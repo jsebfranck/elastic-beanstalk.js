@@ -1,0 +1,22 @@
+{
+  "name": "elastic-beanstalk.js",
+  "version": "0.0.1",
+  "description": "Utilities to deploy packages to AWS Elastic Beanstalk",
+  "main": "elastic-beanstalk.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jsebfranck/elastic-beanstalk.js.git"
+  },
+  "author": "Jean-Sébastien FRANCK",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jsebfranck/elastic-beanstalk.js/issues"
+  },
+  "homepage": "https://github.com/jsebfranck/elastic-beanstalk.js",
+  "dependencies": {
+    "aws-sdk": "^2.1.8",
+    "q": "^1.1.2",
+    "request": "^2.53.0",
+    "winston": "^0.9.0"
+  }
+}
