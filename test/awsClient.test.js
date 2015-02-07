@@ -1,6 +1,6 @@
 'use strict';
 
-var nock = require('nock'),
+var expect = require('chai').expect,
   AWSClient = require('../lib/awsClient.js');
 
 describe('AWS Elastic Beanstalk', function() {
@@ -13,29 +13,73 @@ describe('AWS Elastic Beanstalk', function() {
       secretAccessKey: 'SECRET_ACCESS_KEY',
       region: 'REGION',
       applicationName: 'APPLICATION_NAME',
-      versionsBuckets: 'VERSION_BUCKETS'
+      versionsBucket: 'VERSIONS_BUCKET'
     };
 
     client = new AWSClient(options);
+    client.elasticbeanstalk = {};
   });
 
 
-  it('should get environment info', function(done) {
-    var beanstalkNock = nock('https://elasticbeanstalk.REGION.amazonaws.com:443')
-      .post('/', "Action=DescribeEnvironments&ApplicationName=APPLICATION_NAME&EnvironmentNames.member.1=ENV&Version=2010-12-01")
-      .reply(200, "<DescribeEnvironmentsResponse><DescribeEnvironmentsResult>\n    <Environments>\n      <member>\n        <VersionLabel>master-1d6dcf2fb3a08e66acc8031088aa1d6ac117b425-2015-02-05T11:20:37.438Z</VersionLabel>\n        <Status>Ready</Status>\n        <ApplicationName>APPLICATION_NAME</ApplicationName>\n        <Tier>\n          <Name>WebServer</Name>\n          <Type>Standard</Type>\n          <Version>1.0</Version>\n        </Tier>\n<Health>Green</Health>\n        <EnvironmentId>e-vtsrpakipk</EnvironmentId>\n        <DateUpdated>2015-02-05T11:36:46.984Z</DateUpdated>\n        <SolutionStackName>64bit Amazon Linux 2014.03 v1.0.7 running Node.js</SolutionStackName>\n        <Alerts/>\n        <EnvironmentName>ENV</EnvironmentName>\n        <DateCreated>2014-10-29T10:00:25.469Z</DateCreated>\n      </member>\n    </Environments>\n  </DescribeEnvironmentsResult>\n  <ResponseMetadata>\n    <RequestId>1d909341-ae53-11e4-a153-9de5f2f41935</RequestId>\n  </ResponseMetadata>\n</DescribeEnvironmentsResponse>\n");
+  it('should get environment info', function() {
+    client.elasticbeanstalk.describeEnvironments = function(options, callback) {
+      expect(options.ApplicationName).to.equal('APPLICATION_NAME');
+      expect(options.EnvironmentNames[0]).to.equal('ENVIRONMENT_NAME');
 
+      callback(null, {
+        Environments: [{
+          VersionLabel: 'VERSION_LABEL',
+          Status: 'STATUS',
+          EnvironmentId: 'ENVIRONMENT_ID',
+          EnvironmentName: 'ENVIRONMENT_NAME'
+        }]
+      });
+    };
 
-    client.getEnvironmentInfo('ENV').then(function() {
-      /*
-       version: environment.VersionLabel,
-       status: environment.Status,
-       id: environment.EnvironmentId,
-       name: environment.EnvironmentName
-       */
+    client.getEnvironmentInfo('ENVIRONMENT_NAME').then(function(environmentInfo) {
+      expect(environmentInfo.version).to.equal('VERSION_LABEL');
+      expect(environmentInfo.status).to.equal('STATUS');
+      expect(environmentInfo.id).to.equal('ENVIRONMENT_ID');
+      expect(environmentInfo.name).to.equal('ENVIRONMENT_NAME');
+    }).done();
+  });
 
-      beanstalkNock.done();
-      done();
-    });
+  it('should update environment version', function() {
+    client.elasticbeanstalk.updateEnvironment = function(options, callback) {
+      expect(options.EnvironmentName).to.equal('ENVIRONMENT_NAME');
+      expect(options.VersionLabel).to.equal('NEW_VERSION');
+
+      callback(null, {});
+    };
+
+    client.updateEnvironmentVersion('ENVIRONMENT_NAME', 'NEW_VERSION').done();
+  });
+
+  it('should create an application version', function() {
+    client.elasticbeanstalk.createApplicationVersion = function(options, callback) {
+      expect(options.ApplicationName).to.equal('APPLICATION_NAME');
+      expect(options.VersionLabel).to.equal('VERSION_LABEL');
+      expect(options.Description).to.equal('DESCRIPTION');
+      expect(options.SourceBundle.S3Bucket).to.equal('VERSIONS_BUCKET');
+      expect(options.SourceBundle.S3Key).to.equal('REMOTE_FILENAME');
+
+      callback(null, {
+        ApplicationVersion: {
+          VersionLabel: 'VERSION_LABEL'
+        }
+      });
+    };
+
+    client.createApplicationVersion('VERSION_LABEL', 'DESCRIPTION', 'REMOTE_FILENAME').then(function(result) {
+      expect(result.versionLabel).to.equal('VERSION_LABEL');
+    }).done();
+  });
+  
+  it('should wait environment to be ready', function() {
+    //TODO
+  });
+
+  it('should upload archive to s3', function() {
+    //TODO
   });
 });
