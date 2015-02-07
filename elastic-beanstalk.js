@@ -1,58 +1,66 @@
 'use strict';
 
 var Q = require('q'),
-  awsUtil = require('./lib/awsUtil'),
-  newRelicUtil = require('./lib/newRelicUtil'),
-  logger = require('./lib/logger');
+  logger = require('./lib/logger'),
+  AWSClient = require('./lib/awsClient'),
+  NewrelicClient = require('./lib/newrelicClient');
 
-exports.deploy = function(options) {
-  logger.info('Deploy a new version to %s', options.environment);
+function ElasticBeanstalk(options) {
+  this.awsClient = new AWSClient(options.aws);
+
+  if (options.newrelic) {
+    this.newrelicClient = new NewrelicClient(options.newrelic);
+  }
+}
+
+ElasticBeanstalk.prototype.createVersionAndDeploy = function(options) {
+  var self = this;
   var defered = Q.defer();
 
-  awsUtil.uploadArchiveToS3(options.filename, options.remoteFilename).then(function() {
+  logger.info('Deploy a new version to %s', options.environment);
+
+  self.awsClient.uploadArchiveToS3(options.filename, options.remoteFilename).then(function() {
     logger.info('Uploaded archive to S3');
-    return awsUtil.createApplicationVersion(options.versionLabel, options.description, options.remoteFilename);
+    return self.awsClient.createApplicationVersion(options.versionLabel, options.description, options.remoteFilename);
   }).then(function(versionDetails) {
     logger.info('Created application version', versionDetails.versionLabel);
-    return awsUtil.updateEnvironmentVersion(options.environment, versionDetails.versionLabel);
+    return self.awsClient.updateEnvironmentVersion(options.environment, versionDetails.versionLabel);
   }).then(function() {
     logger.info('Updated environment %s', options.environment);
-    return awsUtil.waitEnvironmentToBeReady(options.environment);
+    return self.awsClient.waitEnvironmentToBeReady(options.environment);
   }).then(function() {
     logger.info('Environment %s has been successfully updated', options.environment);
-    defered.resolve('Deployment is finished.')
+    defered.resolve()
   }).catch(function(err) {
     defered.reject(err);
-    process.exit(1);
   });
 
   return defered.promise;
-}
-
-exports.promote = function(options) {
-  awsUtil.getEnvironmentInfo([options.sourceEnvironment]).then(function(environment) {
-    return awsUtil.updateEnvironmentVersion(options.targetEnvironment, environment.version);
-  }).then(function() {
-    return awsUtil.waitEnvironmentToBeReady(options.targetEnvironment);
-  }).then(function() {
-    console.log(options.targetEnvironment + ' has been updated from ' + options.sourceEnvironment);
-  }).catch(function(err) {
-    console.log('ERROR', err, err.stack);
-    process.exit(1);
-  });
 };
 
-exports.promoteWithNewRelic = function(options) {
-  awsUtil.getEnvironmentInfo([options.sourceEnvironment]).then(function(environment) {
-    return awsUtil.updateEnvironmentVersion(options.targetEnvironment, environment.version);
+ElasticBeanstalk.prototype.promoteVersion = function(options) {
+  var self = this;
+  var defered = Q.defer();
+
+  logger.info('Promote version from ' + options.sourceEnvironment + ' to ' + options.targetEnvironment);
+
+  self.awsClient.getEnvironmentInfo(options.sourceEnvironment).then(function(environment) {
+    return self.awsClient.updateEnvironmentVersion(options.targetEnvironment, environment.version);
   }).then(function() {
-    return newRelicUtil.notifyNewrelicApp({ key: options.newRelicKey, app: options.newRelicAppToNotify });
+    if (self.newrelicClient) {
+      return self.newrelicClient.notifyNewrelicApp();
+    }
+    return;
   }).then(function() {
-    return awsUtil.waitEnvironmentToBeReady(options.targetEnvironment);
+    return self.awsClient.waitEnvironmentToBeReady(options.targetEnvironment);
   }).then(function() {
-    console.log(options.targetEnvironment + ' has been updated from ' + options.sourceEnvironment);
-  }).catch(function(err) {
-    console.log('ERROR', err, err.stack);
-    process.exit(1);
+    logger.info(options.targetEnvironment + ' has been updated from ' + options.sourceEnvironment);
+  }).catch(function(error) {
+    logger.error('Cannot promote version ' + error);
+    defered.reject(err);
   });
+
+  return defered.promise;
 };
+
+module.exports = ElasticBeanstalk;

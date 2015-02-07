@@ -18,5 +18,8 @@
     "q": "^1.1.2",
     "request": "^2.53.0",
     "winston": "^0.9.0"
+  },
+  "devDependencies": {
+    "nock": "^0.59.1"
   }
 }
