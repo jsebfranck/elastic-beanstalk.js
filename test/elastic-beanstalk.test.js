@@ -1,10 +1,13 @@
 'use strict';
 
-var testHelper = require('./testHelper'),
+var nock = require('nock'),
+  Q = require('q'),
+  expect = require('chai').expect,
+  testHelper = require('./testHelper'),
   ElasticBeanstalk = testHelper.requireModule('elastic-beanstalk');
 
 describe('Elastic Beanstalk client', function() {
-  this.timeout(120000);
+  nock.disableNetConnect();
 
   var elasticBeanstalk;
 
@@ -20,14 +23,31 @@ describe('Elastic Beanstalk client', function() {
     });
   });
 
-  /*it('should promote a version', function(done) {
+  it('should promote a version', function() {
+    elasticBeanstalk.awsClient = {
+      getEnvironmentInfo: function(environmentName) {
+        expect(environmentName).to.equal('SOURCE');
+
+        return Q.resolve({
+          version: 'VERSION_LABEL'
+        });
+      },
+      updateEnvironmentVersion: function(environmentName, newVersion) {
+        expect(environmentName).to.equal('TARGET');
+        expect(newVersion).to.equal('VERSION_LABEL');
+
+        return Q.resolve();
+      },
+      waitEnvironmentToBeReady: function(environmentName) {
+        expect(environmentName).to.equal('TARGET');
+
+        return Q.resolve();
+      }
+    };
+
     elasticBeanstalk.promoteVersion({
       sourceEnvironment: 'SOURCE',
       targetEnvironment: 'TARGET'
-    }).then(function() {
-      done();
-    }).catch(function(err) {
-      done(err);
-    })
-  });*/
+    }).done();
+  });
 });
