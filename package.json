@@ -25,7 +25,10 @@
     "winston": "^0.9.0"
   },
   "devDependencies": {
+    "coveralls": "^2.11.2",
+    "jscoverage": "^0.5.9",
     "mocha": "^2.1.0",
+    "mocha-lcov-reporter": "0.0.1",
     "nock": "^0.59.1"
   },
   "scripts": {

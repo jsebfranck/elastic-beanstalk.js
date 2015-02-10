@@ -1,6 +1,7 @@
 'use strict';
 
-var ElasticBeanstalk = require('../elastic-beanstalk');
+var testHelper = require('./testHelper'),
+  ElasticBeanstalk = testHelper.requireModule('elastic-beanstalk');
 
 describe('Elastic Beanstalk client', function() {
   this.timeout(120000);

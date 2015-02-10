@@ -1,7 +1,8 @@
 'use strict';
 
 var expect = require('chai').expect,
-  AWSClient = require('../lib/awsClient.js');
+  testHelper = require('./testHelper'),
+  AWSClient = testHelper.requireModule('awsClient');
 
 describe('AWS Elastic Beanstalk', function() {
 

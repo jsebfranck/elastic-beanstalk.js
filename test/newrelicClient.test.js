@@ -1,7 +1,8 @@
 'use strict';
 
 var nock = require('nock'),
-  NewrelicClient = require('../lib/newrelicClient.js');
+  testHelper = require('./testHelper'),
+  NewrelicClient = testHelper.requireModule('newrelicClient');
 
 describe('Newrelic', function() {
   it('should be notified with a new deployment', function(done) {
