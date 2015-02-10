@@ -1,6 +1,6 @@
 {
   "name": "elastic-beanstalk.js",
-  "version": "0.1",
+  "version": "1.0.0",
   "description": "Utilities to deploy packages to AWS Elastic Beanstalk",
   "main": "elastic-beanstalk.js",
   "repository": {
