@@ -19,7 +19,7 @@ describe('Elastic Beanstalk client', function() {
     });
   });
 
-  it('should promote a version', function(done) {
+  /*it('should promote a version', function(done) {
     elasticBeanstalk.promoteVersion({
       sourceEnvironment: 'SOURCE',
       targetEnvironment: 'TARGET'
@@ -28,5 +28,5 @@ describe('Elastic Beanstalk client', function() {
     }).catch(function(err) {
       done(err);
     })
-  });
+  });*/
 });
