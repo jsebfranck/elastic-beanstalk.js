@@ -5,7 +5,7 @@ Utilities to deploy packages to AWS Elastic Beanstalk.
 # Installation
 
 ```
-// Instructions coming
+npm install elastic-beanstalk.js
 ```
 
 # Usage
