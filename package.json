@@ -7,6 +7,10 @@
     "type": "git",
     "url": "https://github.com/jsebfranck/elastic-beanstalk.js.git"
   },
+  "keywords": [
+    "AWS",
+    "Elastic Beanstalk"
+  ],
   "author": "Jean-Sébastien FRANCK",
   "license": "ISC",
   "bugs": {
