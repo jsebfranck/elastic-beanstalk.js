@@ -1,5 +1,7 @@
 # elastic-beanstalk.js
 
+[![Build Status](https://travis-ci.org/jsebfranck/elastic-beanstalk.js.svg?branch=master)](https://travis-ci.org/jsebfranck/elastic-beanstalk.js)
+
 Utilities to deploy packages to AWS Elastic Beanstalk.
 
 # Installation
