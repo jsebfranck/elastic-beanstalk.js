@@ -1,6 +1,7 @@
 'use strict';
 
 var expect = require('chai').expect,
+  fs = require('fs'),
   testHelper = require('./testHelper'),
   AWSClient = testHelper.requireModule('awsClient');
 
@@ -19,6 +20,7 @@ describe('AWS Elastic Beanstalk', function() {
 
     client = new AWSClient(options);
     client.elasticbeanstalk = {};
+    client.s3 = {};
   });
 
 
@@ -75,12 +77,20 @@ describe('AWS Elastic Beanstalk', function() {
       expect(result.versionLabel).to.equal('VERSION_LABEL');
     }).done();
   });
-  
-  it('should wait environment to be ready', function() {
-    //TODO
-  });
 
   it('should upload archive to s3', function() {
-    //TODO
+    fs.writeFileSync('FILE_NAME', '');
+
+    client.s3.putObject = function(options, callback) {
+      expect(options.ACL).to.equal('private');
+      expect(options.Bucket).to.equal('VERSIONS_BUCKET');
+      expect(options.Key).to.equal('REMOTE_FILENAME');
+
+      callback(null, {});
+    };
+
+    client.uploadArchiveToS3('FILE_NAME', 'REMOTE_FILENAME').done();
+
+    fs.unlinkSync('FILE_NAME');
   });
 });
