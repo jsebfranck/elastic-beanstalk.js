@@ -28,7 +28,7 @@ var elasticBeanstalk = new ElasticBeanstalk({
     applicationName: 'APPLICATION_NAME',
     
     /* the S3 bucket where the packages must be created */
-    versionsBuckets: 'VERSIONS_BUCKETS'
+    versionsBucket: 'VERSIONS_BUCKET'
     
     /* Newrelic application to notify during the deployment (optional) */
     newrelic: {
